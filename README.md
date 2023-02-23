@@ -1,2 +1,2 @@
-# bimm143_github
+#bimm143
 bioinformatics class
