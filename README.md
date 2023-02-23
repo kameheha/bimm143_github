@@ -1,2 +1,3 @@
 # BIMM143
-bioinformatics class at UCSD
+My classwork from BIMM 143 at University of Cal SD
+
