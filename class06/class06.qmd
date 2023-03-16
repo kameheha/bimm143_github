@@ -1,0 +1,173 @@
+---
+title: "Lab_06"
+author: "Victor Yu"
+format: gfm 
+---
+
+In this class we will work througgh the process of developing our own function for calculating average gradfes for fictional students in al fictional class.
+
+We will start with a simplified version of the problem. Grade some vectors of student scores.
+
+We want to drop the lowest score and get the average
+
+```{r}
+# Example input vectors to start with
+student1 <- c(100, 100, 100, 100, 100, 100, 100, 90)
+student2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+student3 <- c(90, NA, NA, NA, NA, NA, NA, NA)
+
+```
+
+```{r}
+mean (student1)
+```
+
+We can find the smallest value with the `min()` function
+
+```{r}
+min (student1)
+```
+
+```{r}
+#Returns the position of the lowest value in the vector
+which.min(student1)
+```
+
+```{r}
+#Tells us the lowest value in the vector. However the student1[] tells us the position. Need to work with which.min to specifically locate the position
+student1[which.min(student1)]
+```
+
+```{r}
+#Mean of vector of Student 1 dropping the lowest score!
+mean(student1[-which.min(student1)])
+```
+
+```{r}
+#Returns logical of every position in vector if NA is present. NA = true
+is.na(student2)
+```
+
+```{r}
+#First line sets NA value to 0. 
+student2[ is.na(student2) ] <- 0
+student2[-which.min(student2)]
+mean(student2[-which.min(student2)])
+```
+
+```{r}
+student3[is.na(student3)] <- 0
+student3[-which.min(student3)]
+mean(student3[-which.min(student3)])
+```
+
+Q1: Write a function grade() to determine the overall grade from a vector of student assignments.
+
+```{r}
+#Our Function! It works for each individual student :0
+grade <- function (x) {
+  x[ is.na(x) ] <- 0
+  x[-which.min(x)]
+  mean(x[-which.min(x)])
+}
+grade(student1)
+grade(student2)
+grade(student3)
+
+```
+
+We have our working snippet of code! 
+
+```{r}
+#' Calculate the average score for a vector of scores, dropping the lowest score
+#' N/A are treated 0 values
+#' @param x A numeric vector of scores
+#'
+#' @return Average value returned
+#' @export
+#'
+#' @examples
+#' student2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+#' grade(student 2)
+grade <- function (x) {
+  #NA values are treated as zero / = 0 now
+  x[ is.na(x) ] <- 0
+  #determines the position of the lowest value of the vector
+  x[-which.min(x)]
+  #finds the average of the vector excluding the lowest vector
+  mean(x[-which.min(x)])
+}
+```
+
+Explain of our function code ^^^. But also our answer to function #1 
+
+```{r}
+#Url stores the data set to varaible url. Gradebook now holds the dataset of interest for this project. A snippet of the dataset we are working with!
+#row.names = 1, removes
+url <-  "https://tinyurl.com/gradeinput"
+gradebook <-read.csv (url, row.names = 1)
+head(gradebook)
+
+```
+Our apply function! It finally returns the grade of each student in the gradebook. 
+
+```{r}
+# Apply function works apply (x, margin, fun)
+# x= our dataset, whether it is a list, vector, or matrix
+# margin = either row or column we are working with or both
+# fun = function we want to apply to data set
+ apply (gradebook, 1, grade)
+```
+Q2: Using your grade() function and the supplied gradebook, Who is the top scoring student
+overall in the gradebook?
+
+We can use the sort function to organize the results we have been given. Bruh, we can also just use which.max / min function. Dr. Grant too smart :o
+```{r}
+#sort (x, decreasing,)
+#decreasing = FALSE (lowest to greatest) = TRUE (greatest to lowest)
+results <- apply (gradebook, 1, grade)
+sort(results, decreasing = TRUE)
+which.max(results)
+```
+Answer for Q2: The top scoring student is student-18 with an average of 94.50
+
+
+Q3.From your analysis of the gradebook, which homework was toughest on students (i.e. obtained
+the lowest scores overall?
+
+
+```{r}
+#class example. Top 3 lines set N/A in data = 0. which allows us to truly find the hardest homework. My top code got lucky.
+mask <- gradebook
+mask[is.na(mask)] <- 0
+mask
+apply (mask,2, mean)
+which.min (apply(mask, 2, mean))
+```
+
+Answer to Q3: HW 2 was the toughest homework! 
+
+Q4: Optional Extension: From your analysis of the gradebook, which homework was most
+predictive of overall score (i.e. highest correlation with average grade score)? [1pt]
+
+Here we are going to look at the correlation of each Homework results (i.e. the columns in the gradebook) with the overall grade of students from the course (in the `results` object obtained from using our `grade()` function). 
+
+```{r}
+#Ok, so cor() functions need to applicable to both vectors. Either vector same or go through individually.
+#NA are showing up again. we need to set NA zero and remove it.
+naremoval <- gradebook
+naremoval[is.na(naremoval)] <- 0
+naremoval
+```
+
+```{r}
+#Our X is naremoval since we are looking at the entire data set now with N/A as 0
+#MARGIN = 2 since we want to look columns / homework to correlate the score
+#Cor is our function since we are trying to correlate results and homework score
+# Y = results because that is the vector in comparison. We want to retrieve values from our results variable. 
+apply(naremoval, 2, cor, y = results )
+which.max(apply (naremoval, 2, cor, y = results))
+```
+
+Answer to Q4: The strongest correlation with homework to predictive score is homework 5!
+
