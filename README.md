@@ -8,7 +8,7 @@ My [BIMM143] (kameheha.github.io/bimm143_github/) classwork from BIMM 143 at UC 
 
 -Class 6: [R functions](https://github.com/kameheha/bimm143_github/blob/main/class06/class06.qmd)
 
--Class 7: [Principle Component Analysis] (PCA)
+-Class 7: [Principle Component Analysis](https://github.com/kameheha/bimm143_github/blob/main/class07/class07.qmd)
 
 -Class 8: [Unsupervised Learning mini-project](https://github.com/kameheha/bimm143_github/blob/main/class08/class08.qmd)
 
