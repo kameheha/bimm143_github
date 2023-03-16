@@ -1,0 +1,245 @@
+---
+title: "Class09"
+author: "Victor Yu"
+format: pdf
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+pdbstats <- read.csv("PDB.csv")
+head(pdbstats)
+```
+```{r}
+#gsub ( input character to change, what to chage it to, which dataset/vector)
+#as.numeric -> changes a character to a numeric values
+
+xrnum <- as.numeric (gsub("," , "", pdbstats$X.ray))
+x.total <- sum(xrnum)
+
+emnum <- as.numeric (gsub("," , "", pdbstats$EM))
+em.total <- sum (emnum)
+
+total <- as.numeric (gsub("," , "", pdbstats$Total))
+data.total <- sum (total)
+
+p.x <- (x.total / data.total) * 100
+p.em <- (em.total / data.total) * 100
+
+# and to 2 s.f
+round (p.x, 2)
+round (p.em, 2)
+```
+
+```{r}
+#For fun function here, just thinking 
+#char_num function converts characeter to numeric values!
+char_num <- function (x) {
+  as.numeric (gsub("," , "", x))
+}
+
+#Just in case i  need to create a sum again. 
+#sum_char_num function used find sum of the column or row or dataset of interest.
+sum_char_num <- function (x) {
+  sum (char.num (x))
+}  
+```
+
+Q1 What percentage of strucutres in the PDB are solved by X-Ray and Electron Microscopy
+
+85.9% - X ray percentage for PDB structures
+7.02% - Electron microscopy percentage for PDB structures
+
+
+```{r}
+char_num (pdbstats$Total) / data.total
+```
+
+
+Q2 What proportion of structures in the PDB are protein?
+
+Ans:86.89% of structres in PDB are protein!
+
+Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+Ans:It is not straightforward to find all HIV-1 protease sutrctures using pain text searching on the database
+
+Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+Ans: We can't see the hydrogens due the limits of current technology. The X-ray & electron micrscope can't be viewed, so the models are missing it
+
+Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+
+HOH308
+
+Q6: Generate and save a figure clearly showing the two distinct chains of HIV-protease along with the ligand. You might also consider showing the catalytic residues ASP 25 in each chain and the critical water (we recommend “Ball & Stick” for these side-chains). Add this figure to your Quarto document.
+
+![My image](1HSG.png)
+
+
+```{r}
+library(bio3d)
+pdb <- read.pdb("1hsg")
+pdb
+```
+```{r}
+head(pdb$atom)
+```
+What is the first residue 3 letter code?
+ANS: PRO!
+
+```{r}
+pdb$atom$resid[1]
+aa321(pdb$atom$resid[1])
+```
+
+
+Q7: How many amino acid residues are there in this pdb object?
+Ans: 198 Residues
+Q8: Name one of the two non-protein residues?
+Answ: HOH, or MK1
+Q9: How many protein chains are in this structure?
+Ans: 2 protein chains
+
+```{r}
+##   Note: Accessing on-line PDB file
+##    PDB has ALT records, taking A only, rm.alt=TRUE
+adk <- read.pdb("6s36")
+adk
+```
+```{r}
+m <- nma (adk)
+plot (m)
+```
+```{r}
+mktrj(m, file="adk_m7.pdb")
+```
+
+#Section 4. Comparative Structure Analysis
+
+
+```{r}
+# Install packages in the R console NOT your Rmd/Quarto file
+
+#install.packages("bio3d")
+#install.packages("devtools")
+#install.packages("BiocManager")
+
+#BiocManager::install("msa")
+#devtools::install_bitbucket("Grantlab/bio3d-view")
+library (bio3d)
+aa <- get.seq("1ake_A")
+aa
+```
+
+Q10. Which of the packages above is found only on BioConductor and not CRAN? 
+Ans: msa
+
+Q11. Which of the above packages is not found on BioConductor or CRAN?: 
+Ans: bio3d-view
+
+Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket? 
+Ans: TRUE
+
+Q13. How many amino acids are in this sequence, i.e. how long is this sequence? 
+214
+
+
+
+```{r}
+#Summary of plot
+#Comment out blast cause it takes too long
+#b <- blast.pdb(aa)
+```
+I could save and load my blast results next timie so I don't need to run the search every time.
+
+A summary plot of our BLAST results.
+```{r}
+#Since we just have to save it once, we file to re-use / bring up again if need be.
+#saveRDS(b, f = "blast_results.RDS")
+```
+
+```{r}
+b <- readRDS("blast_results.RDS")
+```
+
+
+```{r}
+#Summary of the Blast Results
+hits <-  plot(b)
+hits
+#List out some 'top hits'
+hits$pdb.id
+```
+
+
+```{r}
+#Download related PDB files
+
+files <- get.pdb(hits$pdb.id, path = "pdbs" , split = TRUE, gzip = TRUE)
+```
+
+```{r}
+# Align releated PDBs
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+
+pdbs$xyz 
+```
+
+```{r}
+#Schematic Figure of the Alignment
+
+# Vector containing PDB codes for figure axis
+ids <- basename.pdb(pdbs$id)
+
+# Draw schematic alignment
+#plot(pdbs, labels=ids)
+```
+
+And collect annotation for entry
+
+
+Time for PCA. We will use not the `prcomp()` function from base R but the `pca()` function from the `bio3d` package as this one is designed to work nicely with biomolecular data.
+
+```{r}
+anno <- pdb.annotate(ids)
+```
+
+```{r}
+head(anno)
+```
+
+```{r}
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+
+```{r}
+plot(pc.xray, 1:2)
+```
+
+Time to cluster the structures.
+
+```{r}
+# Calculate RMSD
+rd <- rmsd(pdbs)
+
+# Structure-based clustering
+hc.rd <- hclust(dist(rd))
+grps.rd <- cutree(hc.rd, k=3)
+
+plot(pc.xray, 1:2, col="grey50", bg=grps.rd, pch=21, cex=1)
+```
+
+```{r}
+# Visualize first principal component
+pc1 <- mktrj(pc.xray, pc=1, file="pc_1.pdb")
+```
+
+We can now open this trajectory file in Molstar to view a we movie of the major differences (i.e. displacements of atom) in the structure set as we move along PC1
