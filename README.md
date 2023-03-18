@@ -1,6 +1,6 @@
 # BIMM143
 
-My [BIMM143] (kameheha.github.io/bimm143_github/) classwork from BIMM 143 at UC San Diego Winter 2023
+My [BIMM143](https://kameheha.github.io/bimm143_github/) classwork from BIMM 143 at UC San Diego Winter 2023
 
 -Class 4: [Introduction to R](https://github.com/kameheha/bimm143_github/blob/main/class%204/class04.pdf)
 
